@@ -1,0 +1,6 @@
+public enum WinHand {
+
+    WinHand() {
+
+    }
+}
