@@ -1,4 +1,9 @@
+import java.io.LineNumberInputStream;
+import java.nio.file.attribute.FileStoreAttributeView;
 import java.util.Arrays;
+
+import javax.swing.plaf.metal.MetalBorders.Flush3DBorder;
+import javax.swing.text.Highlighter.Highlight;
 
 /**
  * Comment ME!
@@ -11,6 +16,7 @@ public class Hand {
 
     public Hand(int numberOfCards) {
         cards = new Card[numberOfCards];
+        sort();
     }
 
     public Hand() {
@@ -19,10 +25,11 @@ public class Hand {
 
     public void setCard(int index, Card card) {
         cards[index] = card;
+        sort();
     }
 
     /**
-     * TODO: Find out if i can use a break statement in a loop like this
+     * 
      * 
      * @return Returns an integer of the highest ranked pair of cards.
      */
@@ -48,13 +55,13 @@ public class Hand {
     }
 
     /**
-     * Get the rank value of the
+     * TODO: Find out if I am allowed use a break statement in a loop like this
+     * Get the highest rank value of a pair of N cards
      * 
-     * @return
+     * @return A rank value between 1 - 10 or -1 if no pair is found
      */
     private int getNPair(int pairN) {
         int cardRank = -1;
-        // hasNPair automatically sorts the list for us
         if (hasNPair(pairN)) {
             Face lastFaceValue = null;
             int pairCount = 0;
@@ -77,7 +84,6 @@ public class Hand {
     }
 
     private boolean hasNPair(int pairN) {
-        sort();
         boolean hasNpair = false;
         Face lastFaceValue = null;
         int pairCount = 0;
@@ -95,6 +101,79 @@ public class Hand {
             lastFaceValue = card.getName();
         }
         return hasNpair;
+    }
+
+    public WinHand getHandType() {
+        WinHand handType;
+        if (straightFlush()) {
+            handType = WinHand.STRAIGHT_FLUSH;
+        } else if (fourOfAKind()) {
+            handType = WinHand.FOUR_OF_A_KIND;
+        } else if (fullHouse()) {
+            handType = WinHand.FULL_HOUSE;
+        } else if (flush()) {
+            handType = WinHand.FLUSH;
+        } else if (straight()) {
+            handType = WinHand.STRAIGHT;
+        } else if (threeOfAKind()) {
+            handType = WinHand.THREE_OF_A_KIND;
+        } else if (twoPair()) {
+            handType = WinHand.TWO_PAIR;
+        } else if (getHighestCard() != null) {
+            handType = WinHand.HIGH_CARD;
+        } else {
+            handType = WinHand.INVALID;
+        }
+        return handType;
+    }
+
+    private boolean straightFlush() {
+
+    }
+
+    private boolean straight() {
+
+    }
+
+    private boolean flush() {
+
+    }
+
+    private boolean fourOfAKind() {
+
+    }
+
+    private boolean threeOfAKind() {
+
+    }
+
+    private boolean pair() {
+
+    }
+
+    private boolean twoPair() {
+
+    }
+
+    private boolean fullHouse() {
+
+    }
+
+    @Override
+    public String toString() {
+        String cardsString = "Cards: ( ";
+        for (int i = 0; i < cards.length; i++) {
+            Card card = cards[i];
+            if (card != null) {
+                cardsString += "[ " + i + " ]" + card.toString();
+            }
+            if (i != cards.length - 1) {
+                cardsString += ", ";
+            } else {
+                cardsString += " )";
+            }
+        }
+        return cardsString;
     }
 
     /**

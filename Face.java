@@ -41,9 +41,9 @@ public enum Face {
     private int value;
     private int rank;
 
-    Face(String name, int points, int rank) {
+    Face(String name, int value, int rank) {
         this.name = name;
-        this.value = points;
+        this.value = value;
         this.rank = rank;
     }
 }
