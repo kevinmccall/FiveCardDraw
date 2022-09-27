@@ -1,9 +1,4 @@
-import java.io.LineNumberInputStream;
-import java.nio.file.attribute.FileStoreAttributeView;
 import java.util.Arrays;
-
-import javax.swing.plaf.metal.MetalBorders.Flush3DBorder;
-import javax.swing.text.Highlighter.Highlight;
 
 /**
  * Comment ME!
@@ -13,14 +8,20 @@ public class Hand {
 
     // FIELDS
     private Card[] cards;
+    private int[] values;
+    private static int DEFALT_POKER_CARDS = 5;
 
     public Hand(int numberOfCards) {
         cards = new Card[numberOfCards];
+        values = new int[13];
+        for (int i = 0; i < cards.length; i++) {
+            values[cards[i].getName().getRank() - 1] += 1; // create an array for each type of card 1 - 13
+        }
         sort();
     }
 
     public Hand() {
-        this(5);
+        this(DEFALT_POKER_CARDS);
     }
 
     public void setCard(int index, Card card) {
@@ -46,59 +47,60 @@ public class Hand {
     }
 
     public Card getHighestCard() {
-        sort();
-        Card highestCard = null;
-        if (cards[0] != null) {
-            highestCard = cards[0];
+        for (int i = cards.length -1; i >= 0; i--) {
+            if 
         }
-        return highestCard;
     }
 
     /**
-     * TODO: Find out if I am allowed use a break statement in a loop like this
      * Get the highest rank value of a pair of N cards
      * 
      * @return A rank value between 1 - 10 or -1 if no pair is found
      */
     private int getNPair(int pairN) {
         int cardRank = -1;
-        if (hasNPair(pairN)) {
-            Face lastFaceValue = null;
-            int pairCount = 0;
-            for (int i = 0; i < cards.length; i++) {
-                Card card = cards[i];
-                if (card != null) {
-                    if (lastFaceValue == card.getName()) {
-                        pairCount++;
-                        if (pairN == pairCount - 1) {
-                            cardRank = card.getName().getRank();
-                            break;
-                        }
-                    }
-                }
-                lastFaceValue = card.getName();
-            }
+        if (!hasNPair(pairN)) {
             return cardRank;
+        }
+
+        int pairCount = 0;
+        for (int i = 0; i < cards.length - 1 && cardRank == -1; i++) {
+            Card card = cards[i];
+            Card nextCard = cards[i + 1];
+            if (card != null) {
+                if (card.value() == nextCard.value() - 1) {
+                    pairCount++;
+                    if (pairN == pairCount - 1) {
+                        cardRank = nextCard.getName().getRank();
+                    }
+                } else if (card.value() == nextCard.value()) {
+
+                } else {
+                    pairCount = 0;
+                }
+            }
         }
         return cardRank;
     }
 
     private boolean hasNPair(int pairN) {
         boolean hasNpair = false;
-        Face lastFaceValue = null;
         int pairCount = 0;
-        for (int i = 0; i < cards.length; i++) {
+        for (int i = 0; i < cards.length - 1 && !hasNpair; i++) {
             Card card = cards[i];
+            Card nextCard = cards[i + 1];
             if (card != null) {
-                if (lastFaceValue == card.getName()) {
+                if (card.value() == nextCard.value()) {
                     pairCount++;
                     if (pairN == pairCount - 1) {
                         hasNpair = true;
-                        break;
                     }
+                } else if (card.value() == nextCard.value()) {
+
+                } else {
+                    pairCount = 0;
                 }
             }
-            lastFaceValue = card.getName();
         }
         return hasNpair;
     }
@@ -128,35 +130,80 @@ public class Hand {
     }
 
     private boolean straightFlush() {
-
+        return flush() && straight();
     }
 
     private boolean straight() {
-
+        boolean hasStraight = true;
+        for (int i = 0; i < cards.length - 1 && !hasStraight; i++) {
+            Card card = cards[i];
+            Card nextCard = cards[i + 1];
+            if (card != null) {
+                if (!(card.value() == nextCard.value() - 1)) {
+                    hasStraight = false;
+                }
+            }
+        }
+        return hasStraight;
     }
 
     private boolean flush() {
-
+        boolean hasFlush = true;
+        Suit suit = cards[0].getSuit();
+        for (int i = 1; i < cards.length; i++) { // skip first iteration because we already set it in a variable
+            if (cards[i].getSuit().equals(suit)) {
+                hasFlush = false;
+            }
+        }
+        return hasFlush;
     }
 
     private boolean fourOfAKind() {
-
+        return hasNPair(4); // See if it has 4 of the same card
     }
 
     private boolean threeOfAKind() {
-
+        return hasNPair(3); // See if it has 3 of the same card
     }
 
     private boolean pair() {
-
+        return hasNPair(2); // See if it has 2 of the same card
     }
 
     private boolean twoPair() {
-
+        boolean hasTwoPair = false;
+        boolean foundFirst = false;
+        for (int i = 0; i < cards.length - 1 && !hasTwoPair; i++) {
+            Card currentCard = cards[i];
+            Card nextCard = cards[i + 1];
+            if (currentCard.value() == nextCard.value()) {
+                if (!foundFirst) {
+                    foundFirst = true;
+                } else {
+                    hasTwoPair = true;
+                }
+            }
+        }
+        return hasTwoPair;
     }
 
     private boolean fullHouse() {
-
+        boolean hasFullHouse = false;
+        int cardOneCount = 0;
+        int cardTwoCount = 0;
+        for (int i = 0; i < cards.length - 1 && hasFullHouse; i++) {
+            Card currentCard = cards[i];
+            Card nextCard = cards[i + 1];
+            if (currentCard.value() == nextCard.value()) {
+                cardOneCount += 1;
+            } else if (currentCard.value() == nextCard.value() - 1) {
+                cardTwoCount += 1;
+            }
+        }
+        if (cardOneCount == 3 && cardTwoCount == 1) {
+            hasFullHouse = true;
+        }
+        return hasFullHouse;
     }
 
     @Override
@@ -166,13 +213,12 @@ public class Hand {
             Card card = cards[i];
             if (card != null) {
                 cardsString += "[ " + i + " ]" + card.toString();
-            }
-            if (i != cards.length - 1) {
-                cardsString += ", ";
-            } else {
-                cardsString += " )";
+                if (i != cards.length - 1) {
+                    cardsString += ", ";
+                }
             }
         }
+        cardsString += " )";
         return cardsString;
     }
 
