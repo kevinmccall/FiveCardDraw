@@ -1,110 +1,111 @@
 import java.util.Arrays;
 
 /**
- * Comment ME!
+ * Class that represents a hand in a game of poker
  *
  */
 public class Hand {
 
     // FIELDS
     private Card[] cards;
-    private int[] values;
+    private int[] cardRanks;
     private static int DEFALT_POKER_CARDS = 5;
 
     public Hand(int numberOfCards) {
         cards = new Card[numberOfCards];
-        values = new int[13];
-        for (int i = 0; i < cards.length; i++) {
-            values[cards[i].getName().getRank() - 1] += 1; // create an array for each type of card 1 - 13
-        }
-        sort();
+        cardRanks = new int[13];
     }
 
+    /**
+     * Use this after setting cards. Sorts cards for finding attributes of the hand.
+     */
+    public void updateHandValues() {
+        sort();
+        for (int i = 0; i < cards.length; i++) {
+            cardRanks[cards[i].getName().getRank() - 1] += 1; // create an array for each type of card 1 - 13
+        }
+    }
+
+    /**
+     * Creates a hand for a game of poker with 5 cards
+     */
     public Hand() {
         this(DEFALT_POKER_CARDS);
     }
 
+    /**
+     * Set a card value at a certain index
+     * 
+     * @param index Index of which card you would like to modify
+     * @param card  New card to replace the old card.
+     */
     public void setCard(int index, Card card) {
         cards[index] = card;
-        sort();
     }
 
     /**
+     * Helper method to get amount 1, 2, 3... N kind of hands.
      * 
+     * @param N How many duplicate cards of the same rank should we search for.
+     * @return the highest rank of cards with N duplicates.
+     */
+    private int getNKind(int N) {
+        int pair = -1;
+        for (int i = cardRanks.length - 1; i >= 0 && pair == -1; i--) {
+            if (cardRanks[i] >= N) {
+                pair = i;
+            }
+        }
+        return pair;
+    }
+
+    /**
+     * Gets a pair of cards with the same rank.
      * 
      * @return Returns an integer of the highest ranked pair of cards.
      */
     public int getPair() {
-        return getNPair(2);
-    }
-
-    public int getThreeKind() {
-        return getNPair(3);
-    }
-
-    public int getFourKind() {
-        return getNPair(4);
-    }
-
-    public Card getHighestCard() {
-        for (int i = cards.length -1; i >= 0; i--) {
-            if 
-        }
+        return getNKind(2);
     }
 
     /**
-     * Get the highest rank value of a pair of N cards
+     * Gets a three of a kind of cards with the same rank.
      * 
-     * @return A rank value between 1 - 10 or -1 if no pair is found
+     * @return Returns an integer of the highest ranked trio of cards.
      */
-    private int getNPair(int pairN) {
-        int cardRank = -1;
-        if (!hasNPair(pairN)) {
-            return cardRank;
-        }
-
-        int pairCount = 0;
-        for (int i = 0; i < cards.length - 1 && cardRank == -1; i++) {
-            Card card = cards[i];
-            Card nextCard = cards[i + 1];
-            if (card != null) {
-                if (card.value() == nextCard.value() - 1) {
-                    pairCount++;
-                    if (pairN == pairCount - 1) {
-                        cardRank = nextCard.getName().getRank();
-                    }
-                } else if (card.value() == nextCard.value()) {
-
-                } else {
-                    pairCount = 0;
-                }
-            }
-        }
-        return cardRank;
+    public int getThreeKind() {
+        return getNKind(3);
     }
 
-    private boolean hasNPair(int pairN) {
-        boolean hasNpair = false;
-        int pairCount = 0;
-        for (int i = 0; i < cards.length - 1 && !hasNpair; i++) {
-            Card card = cards[i];
-            Card nextCard = cards[i + 1];
-            if (card != null) {
-                if (card.value() == nextCard.value()) {
-                    pairCount++;
-                    if (pairN == pairCount - 1) {
-                        hasNpair = true;
-                    }
-                } else if (card.value() == nextCard.value()) {
-
-                } else {
-                    pairCount = 0;
-                }
-            }
-        }
-        return hasNpair;
+    /**
+     * Gets a four of a kind of cards with the same rank.
+     * 
+     * @return Returns an integer of the highest ranked quad of cards.
+     */
+    public int getFourKind() {
+        return getNKind(4);
     }
 
+    /**
+     * Returns the rank of the highest card in the hand.
+     * 
+     * @return integer representing the rank of the highest card.
+     */
+    public int getHighestCard() {
+        int highCard = -1;
+        for (int i = cardRanks.length - 1; i >= 0 && highCard == -1; i--) {
+            if (cardRanks[i] != 0) {
+                highCard = i;
+            }
+        }
+        return highCard;
+    }
+
+    /**
+     * Returns the most valuable hand type of this hand.
+     * 
+     * @return WinHand enum representing the strongest hand.
+     */
     public WinHand getHandType() {
         WinHand handType;
         if (straightFlush()) {
@@ -121,7 +122,7 @@ public class Hand {
             handType = WinHand.THREE_OF_A_KIND;
         } else if (twoPair()) {
             handType = WinHand.TWO_PAIR;
-        } else if (getHighestCard() != null) {
+        } else if (getHighestCard() != -1) {
             handType = WinHand.HIGH_CARD;
         } else {
             handType = WinHand.INVALID;
@@ -129,24 +130,41 @@ public class Hand {
         return handType;
     }
 
+    /**
+     * Helper method for finding a straight flush
+     * 
+     * @return boolean for if there is a straight flush.
+     */
     private boolean straightFlush() {
         return flush() && straight();
     }
 
+    /**
+     * Returns true if there is a straight.
+     * 
+     * @return boolean for if hand contains a straight.
+     */
     private boolean straight() {
-        boolean hasStraight = true;
-        for (int i = 0; i < cards.length - 1 && !hasStraight; i++) {
-            Card card = cards[i];
-            Card nextCard = cards[i + 1];
-            if (card != null) {
-                if (!(card.value() == nextCard.value() - 1)) {
-                    hasStraight = false;
-                }
+        int maxConsecutive = 0;
+        int consecutive = 0;
+        for (int i = cardRanks.length - 1; i >= 0; i--) {
+            if (cardRanks[i] != 0) {
+                consecutive += 1;
+            } else {
+                consecutive = 0;
+            }
+            if (consecutive > maxConsecutive) {
+                maxConsecutive = consecutive;
             }
         }
-        return hasStraight;
+        return maxConsecutive >= 5;
     }
 
+    /**
+     * Helper method that returns true if there is a flush.
+     * 
+     * @return boolean for if hand contains a flush.
+     */
     private boolean flush() {
         boolean hasFlush = true;
         Suit suit = cards[0].getSuit();
@@ -158,54 +176,81 @@ public class Hand {
         return hasFlush;
     }
 
+    /**
+     * Helper method that returns true if there is a four of a kind.
+     * 
+     * @return boolean for if hand contains a four of a kind.
+     */
     private boolean fourOfAKind() {
-        return hasNPair(4); // See if it has 4 of the same card
+        return getNKind(4) != -1; // See if it has 4 of the same card
     }
 
+    /**
+     * Helper method that returns true if there is a three of a kind.
+     * 
+     * @return boolean for if hand contains a three of a kind.
+     */
     private boolean threeOfAKind() {
-        return hasNPair(3); // See if it has 3 of the same card
+        return getNKind(3) != -1; // See if it has 3 of the same card
     }
 
+    /**
+     * Helper method that returns true if there is a two of a kind.
+     * 
+     * @return boolean for if hand contains a two of a kind.
+     */
     private boolean pair() {
-        return hasNPair(2); // See if it has 2 of the same card
+        return getNKind(2) != -1; // See if it has 2 of the same card
     }
 
+    /**
+     * Helper method that returns true if a hand contains two pair.
+     * 
+     * @return boolean for if hand contains a two pair.
+     */
     private boolean twoPair() {
+        int secondSearchIndex = -1;
         boolean hasTwoPair = false;
-        boolean foundFirst = false;
-        for (int i = 0; i < cards.length - 1 && !hasTwoPair; i++) {
-            Card currentCard = cards[i];
-            Card nextCard = cards[i + 1];
-            if (currentCard.value() == nextCard.value()) {
-                if (!foundFirst) {
-                    foundFirst = true;
-                } else {
-                    hasTwoPair = true;
-                }
+        for (int i = cardRanks.length - 1; i >= 0 && secondSearchIndex == -1; i--) {
+            if (cardRanks[i] >= 2) {
+                secondSearchIndex = i - 1;
+            }
+        }
+        for (int i = secondSearchIndex; i >= 0 && !hasTwoPair && secondSearchIndex != -1; i--) {
+            if (cardRanks[i] >= 2) {
+                hasTwoPair = true;
             }
         }
         return hasTwoPair;
     }
 
+    /**
+     * Helper method that returns true if a hand contains a full house.
+     * 
+     * @return boolean for if hand contains a full house.
+     */
     private boolean fullHouse() {
+        int secondSearchIndex = -1;
         boolean hasFullHouse = false;
-        int cardOneCount = 0;
-        int cardTwoCount = 0;
-        for (int i = 0; i < cards.length - 1 && hasFullHouse; i++) {
-            Card currentCard = cards[i];
-            Card nextCard = cards[i + 1];
-            if (currentCard.value() == nextCard.value()) {
-                cardOneCount += 1;
-            } else if (currentCard.value() == nextCard.value() - 1) {
-                cardTwoCount += 1;
+        for (int i = cardRanks.length - 1; i >= 0 && secondSearchIndex == -1; i--) {
+            if (cardRanks[i] >= 2) {
+                secondSearchIndex = i - 1;
             }
         }
-        if (cardOneCount == 3 && cardTwoCount == 1) {
-            hasFullHouse = true;
+        for (int i = secondSearchIndex; i >= 0 && !hasFullHouse && secondSearchIndex != -1; i--) {
+            if (cardRanks[i] >= 3) {
+                hasFullHouse = true;
+            }
         }
         return hasFullHouse;
     }
 
+    /**
+     * Returns a string representation of the hand alongside the index values for
+     * each of the cards in the hand
+     * 
+     * @return string representation of current hand.
+     */
     @Override
     public String toString() {
         String cardsString = "Cards: ( ";
