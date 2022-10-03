@@ -1,6 +1,9 @@
 /**
  * Class representing the face, rank, and value of a card. This class is public
  * because it needs to be accessed from other classes.
+ * 
+ * @author Kevin McCall
+ * @version 10/3/2022
  */
 public enum Face {
     /** Ace is low */

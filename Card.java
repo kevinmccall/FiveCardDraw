@@ -2,7 +2,8 @@
  * A class representing a single card. It is public because it needs to be
  * accessed from decks of cards.
  * 
- * @author William Kreahling
+ * @author William Kreahling and Kevin McCall
+ * @version 10/3/2022
  */
 public class Card {
     /**

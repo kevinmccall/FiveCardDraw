@@ -1,5 +1,8 @@
 /**
  * Enum that represents the suit of a card.
+ * 
+ * @author Kevin McCall
+ * @version 10/3/2022
  */
 
 public enum Suit {

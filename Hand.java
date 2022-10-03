@@ -4,6 +4,8 @@ import java.util.Arrays;
  * Class that represents a hand in a game of poker. It is public so people can
  * use this class in other card game related programs.
  *
+ * @author Kevin McCall
+ * @version 10/3/2022
  */
 public class Hand {
 
