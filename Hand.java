@@ -1,16 +1,28 @@
 import java.util.Arrays;
 
 /**
- * Class that represents a hand in a game of poker
+ * Class that represents a hand in a game of poker. It is public so people can
+ * use this class in other card game related programs.
  *
  */
 public class Hand {
 
-    // FIELDS
+    /** Represents cards in a hand */
     private Card[] cards;
+    /**
+     * An array with 13 slots that has the count of each rank of card in it
+     * Ex: [0,0,2,0,0,0,1,0,1,1,0,0,0] -> pair of threes, a seven, a nine, and a ten
+     */
     private int[] cardRanks;
+
+    /** Default number of cards in a poker hand */
     public final static int DEFALT_POKER_CARDS = 5;
 
+    /**
+     * Constructor for a new hand with numberOfCards card slots
+     * 
+     * @param numberOfCards number of cards in this hand
+     */
     public Hand(int numberOfCards) {
         cards = new Card[numberOfCards];
         cardRanks = new int[13];
@@ -289,6 +301,11 @@ public class Hand {
      */
     public void sort() {
         Arrays.sort(cards, (Card u1, Card u2) -> u1.compareTo(u2));
+    }
+
+    /** Getter for the size of the hand */
+    public int getHandSize() {
+        return cards.length;
     }
 
 }

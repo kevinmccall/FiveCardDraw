@@ -1,21 +1,39 @@
 import java.util.Random;
 import java.util.Scanner;
 
+/**
+ * Represents a Game of Five Card Draw. It is public so that the game can be
+ * played.
+ * 
+ * @author Kevin McCall
+ * @version 10/3/2022
+ */
 public class Game {
+    /** Represents a deck of cards */
     private Card[] deck;
+    /** Represents the Player's hand of cards */
     private Hand playerHand;
+    /** Represents the Computers's hand of cards */
     private Hand computerHand;
+    /** The default amount of cards in a deck */
     public static final int CARDS_IN_DECK = 52;
 
+    /**
+     * Runs a game of Five Card draw with user input
+     * 
+     * @param args unused
+     */
     public static void main(String[] args) {
         Game game = new Game();
         game.go();
     }
 
+    /** Default constructor for a game of five card draw */
     public Game() {
         deck = new Card[CARDS_IN_DECK];
     }
 
+    /** Initializes a deck with 52 cards */
     private void initializeDeck() {
         Face[] faceValues = Face.values();
         Suit[] suitValues = Suit.values();
@@ -26,80 +44,57 @@ public class Game {
         }
     }
 
+    /** Starts a game of Five Card Draw with default settings */
     public void go() {
         playerHand = new Hand();
         computerHand = new Hand();
         initializeDeck();
         shuffle();
         deal();
-        /*
-         * 
-         * // ace of clubs, three of spades, six of hearts, queen of hearts, king of
-         * // diamonds
-         * playerHand.setCard(0, new Card(Face.ACE, Suit.CLUBS));
-         * playerHand.setCard(1, new Card(Face.THREE, Suit.SPADES));
-         * playerHand.setCard(2, new Card(Face.SIX, Suit.HEARTS));
-         * playerHand.setCard(3, new Card(Face.QUEEN, Suit.HEARTS));
-         * playerHand.setCard(4, new Card(Face.KING, Suit.DIAMONDS));
-         * playerHand.updateHandValues();
-         * // Ace of diamonds, four of spades, five of diamonds, jack of spades, queen
-         * of
-         * 
-         * // clubs
-         * computerHand.setCard(0, new Card(Face.ACE, Suit.DIAMONDS));
-         * computerHand.setCard(1, new Card(Face.FOUR, Suit.SPADES));
-         * computerHand.setCard(2, new Card(Face.FIVE, Suit.DIAMONDS));
-         * computerHand.setCard(3, new Card(Face.JACK, Suit.SPADES));
-         * computerHand.setCard(4, new Card(Face.QUEEN, Suit.CLUBS));
-         * computerHand.updateHandValues();
-         */
+        switchPlayerCards();
+        defualtRevealHands();
+        printWinner();
 
-        /*
-         * 
-         * // Three of spades, six of spades, seven of diamonds, ten of hearts, king of
-         * // spades
-         * playerHand.setCard(0, new Card(Face.THREE, Suit.SPADES));
-         * playerHand.setCard(1, new Card(Face.SIX, Suit.SPADES));
-         * playerHand.setCard(2, new Card(Face.SEVEN, Suit.DIAMONDS));
-         * playerHand.setCard(3, new Card(Face.TEN, Suit.HEARTS));
-         * playerHand.setCard(4, new Card(Face.KING, Suit.SPADES));
-         * playerHand.updateHandValues();
-         * // Seven of spades, eight of hearts, nine of diamonds, ten of diamonds, ten
-         * of
-         * // spades
-         * computerHand.setCard(0, new Card(Face.SEVEN, Suit.SPADES));
-         * computerHand.setCard(1, new Card(Face.EIGHT, Suit.HEARTS));
-         * computerHand.setCard(2, new Card(Face.NINE, Suit.DIAMONDS));
-         * computerHand.setCard(3, new Card(Face.TEN, Suit.DIAMONDS));
-         * computerHand.setCard(4, new Card(Face.TEN, Suit.SPADES));
-         * computerHand.updateHandValues();
-         * 
-         */
+    }
+
+    /** Helper metod that Allows the player to switch their cards */
+    private void switchPlayerCards() {
         displayDeck("Player", playerHand);
         System.out.print("How many cards would you like to remove from your hand: ");
         Scanner scanner = new Scanner(System.in);
         int numCardsToSwitch = scanner.nextInt();
+        while (numCardsToSwitch < 0 || numCardsToSwitch > playerHand.getHandSize()) {
+            System.err.println("Please provide a valid integer.");
+            numCardsToSwitch = scanner.nextInt();
+        }
         if (numCardsToSwitch > 0) {
             System.out.print("Enter which cards you would like to remove: ");
-            dealOne(playerHand, scanner.nextInt());
-            for (int i = 1; i < numCardsToSwitch; i++) {
-                dealOne(playerHand, scanner.nextInt()); // Would it be better to use scanner.nextString() here and to
-                                                        // manually
+            for (int i = 0; i < numCardsToSwitch; i++) {
+                int inputIndex = scanner.nextInt();
+                while (inputIndex < 0 || inputIndex >= playerHand.getHandSize()) {
+                    System.err.println("Please provide a valid integer position in the hand.");
+                    inputIndex = scanner.nextInt();
+                }
+                dealOne(playerHand, inputIndex);
             }
             playerHand.updateHandValues();
         }
+        scanner.close();
+    }
 
+    /** Helper method that prints the player's and the computer's hand */
+    private void defualtRevealHands() {
         System.out.println("------------------------------");
         System.out.println("Reveal Hands!");
         displayDeck("Player", playerHand);
         displayDeck("AI", computerHand);
         System.out.println("------------------------------");
-
-        printWinner();
-        scanner.close();
-
     }
 
+    /**
+     * Uses the fisher-gates shuffle method from Sumit Ghosh to shuffle the deck of
+     * cards. PUblic because people may want to shuffle mid-game.
+     */
     public void shuffle() {
         // Creating a object for Random class
         Random r = new Random();
@@ -119,11 +114,22 @@ public class Game {
         // This code is contributed by Sumit Ghosh
     }
 
-    public void displayDeck(String playerName, Hand hand) {
+    /**
+     * Helper method that prints a deck of cards to stdout alongside the name of the
+     * player who's deck is being shown
+     * 
+     * @param playerName The name of the player whose cards are being shown
+     * @param hand       The hand that is to be printed
+     */
+    private void displayDeck(String playerName, Hand hand) {
         System.out.println(playerName + ":");
         System.out.println(hand);
     }
 
+    /**
+     * Deals cards to all players in a round robin type of way. Takes cards out of
+     * deck
+     */
     private void deal() {
         Hand[] hands = { playerHand, computerHand };
         int cardIndex = 0;
@@ -140,20 +146,18 @@ public class Game {
                 cardIndex++;
             }
         }
-        // int handIndex = 0;
-        // for (int i = 0; i < deck.length && handIndex < Hand.DEFALT_POKER_CARDS *
-        // hands.length; i++) {
-        // Card currentCard = deck[i];
-        // if (currentCard != null) {
-        // hands[i % hands.length].setCard(handIndex, currentCard);
-        // handIndex++;
-        // }
-        // }
-        for (int i = 0; i < hands.length; i++) {
+        for (int i = 0; i < hands.length; i++) { // Inform each hand that their cards have been updated
             hands[i].updateHandValues();
         }
     }
 
+    /**
+     * Discards a single card from a hand at an index and deals a new card to that
+     * index. Takes card from deck.
+     * 
+     * @param hand  The hand to deal a new card to
+     * @param index The index of which card you are trying to access
+     */
     private void dealOne(Hand hand, int index) {
         boolean dealtCard = false;
         for (int i = 0; i < deck.length && !dealtCard; i++) {
@@ -161,10 +165,16 @@ public class Game {
             if (currentCard != null) {
                 hand.setCard(index, currentCard);
                 deck[i] = null;
+                dealtCard = true;
             }
         }
     }
 
+    /**
+     * Compares the hands of the player and the computer and prints the winner to
+     * stdout. In the event of a tie of handType, the deck with the highest card
+     * will win (Not realistic poker strategy).
+     */
     private void printWinner() {
         WinHand playerHandType = playerHand.getHandType();
         WinHand computerHandType = computerHand.getHandType();
@@ -181,10 +191,10 @@ public class Game {
             } else if (playerHighCard == computerHighCard) {
                 message = String.format("You both split the pot! You both had a %s", playerHandType.toString());
             } else {
-                message = String.format("The computer has won (Drats)! It had %s", playerHandType.toString());
+                message = String.format("The computer has won (Drats)! It had %s", computerHandType.toString());
             }
         } else {
-            message = String.format("The computer has won (Drats)! It had %s", playerHandType.toString());
+            message = String.format("The computer has won (Drats)! It had %s", computerHandType.toString());
         }
         System.out.println(message);
     }
