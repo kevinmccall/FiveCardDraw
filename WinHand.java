@@ -6,7 +6,8 @@ public enum WinHand {
     STRAIGHT(),
     THREE_OF_A_KIND(),
     TWO_PAIR(),
-    HIGH_CARD(),
+    PAIR(), // 7
+    HIGH_CARD(), // 8
     INVALID();
 
     WinHand() {
