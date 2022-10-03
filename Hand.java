@@ -9,7 +9,7 @@ public class Hand {
     // FIELDS
     private Card[] cards;
     private int[] cardRanks;
-    private static int DEFALT_POKER_CARDS = 5;
+    public final static int DEFALT_POKER_CARDS = 5;
 
     public Hand(int numberOfCards) {
         cards = new Card[numberOfCards];
@@ -21,6 +21,9 @@ public class Hand {
      */
     public void updateHandValues() {
         sort();
+        for (int i = 0; i < cardRanks.length; i++) {
+            cardRanks[i] = 0; // fill cardRanks with 0s
+        }
         for (int i = 0; i < cards.length; i++) {
             cardRanks[cards[i].getName().getRank() - 1] += 1; // create an array for each type of card 1 - 13
         }
@@ -122,6 +125,8 @@ public class Hand {
             handType = WinHand.THREE_OF_A_KIND;
         } else if (twoPair()) {
             handType = WinHand.TWO_PAIR;
+        } else if (pair()) {
+            handType = WinHand.PAIR;
         } else if (getHighestCard() != -1) {
             handType = WinHand.HIGH_CARD;
         } else {
@@ -131,7 +136,8 @@ public class Hand {
     }
 
     /**
-     * Helper method for finding a straight flush
+     * Helper method for finding a straight flush. Assumes that the game is only
+     * played with five cards.
      * 
      * @return boolean for if there is a straight flush.
      */
@@ -142,7 +148,8 @@ public class Hand {
     /**
      * Returns true if there is a straight.
      * 
-     * @return boolean for if hand contains a straight.
+     * @return boolean for if hand contains a straight. Assumes that the game is
+     *         only played with five cards.
      */
     private boolean straight() {
         int maxConsecutive = 0;
@@ -157,7 +164,7 @@ public class Hand {
                 maxConsecutive = consecutive;
             }
         }
-        return maxConsecutive >= 5;
+        return maxConsecutive >= 5; // if there is 5 cards in a row
     }
 
     /**
@@ -169,7 +176,7 @@ public class Hand {
         boolean hasFlush = true;
         Suit suit = cards[0].getSuit();
         for (int i = 1; i < cards.length; i++) { // skip first iteration because we already set it in a variable
-            if (cards[i].getSuit().equals(suit)) {
+            if (!cards[i].getSuit().equals(suit)) {
                 hasFlush = false;
             }
         }
@@ -212,12 +219,12 @@ public class Hand {
         int secondSearchIndex = -1;
         boolean hasTwoPair = false;
         for (int i = cardRanks.length - 1; i >= 0 && secondSearchIndex == -1; i--) {
-            if (cardRanks[i] >= 2) {
+            if (cardRanks[i] >= 2) { // first two of a kind
                 secondSearchIndex = i - 1;
             }
         }
         for (int i = secondSearchIndex; i >= 0 && !hasTwoPair && secondSearchIndex != -1; i--) {
-            if (cardRanks[i] >= 2) {
+            if (cardRanks[i] >= 2) { // second two of a kind
                 hasTwoPair = true;
             }
         }
@@ -225,20 +232,25 @@ public class Hand {
     }
 
     /**
-     * Helper method that returns true if a hand contains a full house.
+     * Helper method that returns true if a hand contains a full house. Assumes that
+     * the hand only has five cards.
      * 
      * @return boolean for if hand contains a full house.
      */
     private boolean fullHouse() {
-        int secondSearchIndex = -1;
+        int blacklistedIndex = -1;
         boolean hasFullHouse = false;
-        for (int i = cardRanks.length - 1; i >= 0 && secondSearchIndex == -1; i--) {
-            if (cardRanks[i] >= 2) {
-                secondSearchIndex = i - 1;
+        for (int i = cardRanks.length - 1; i >= 0 && blacklistedIndex == -1; i--) {
+            if (cardRanks[i] >= 3) { // three of a kind
+                blacklistedIndex = i;
             }
         }
-        for (int i = secondSearchIndex; i >= 0 && !hasFullHouse && secondSearchIndex != -1; i--) {
-            if (cardRanks[i] >= 3) {
+        for (int i = cardRanks.length - 1; i >= 0 && blacklistedIndex != -1; i--) {
+            if (cardRanks[i] >= 2) { // two of a kind
+                if (i == blacklistedIndex) {
+                    continue; // We talked about this during office hours
+                }
+
                 hasFullHouse = true;
             }
         }
@@ -253,18 +265,19 @@ public class Hand {
      */
     @Override
     public String toString() {
-        String cardsString = "Cards: ( ";
+        StringBuilder cardsString = new StringBuilder();
+        cardsString.append("Cards: ( ");
         for (int i = 0; i < cards.length; i++) {
             Card card = cards[i];
             if (card != null) {
-                cardsString += "[ " + i + " ]" + card.toString();
+                cardsString.append(String.format("[%d] %s", i, card.toString()));
                 if (i != cards.length - 1) {
-                    cardsString += ", ";
+                    cardsString.append(", ");
                 }
             }
         }
-        cardsString += " )";
-        return cardsString;
+        cardsString.append(" )");
+        return cardsString.toString();
     }
 
     /**
